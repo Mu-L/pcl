@@ -39,11 +39,10 @@
 #include <pcl/console/print.h>
 #include <pcl/io/openni_grabber.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/timestamp.h>
 #include <pcl/keypoints/harris_2d.h>
 #include <pcl/tracking/pyramidal_klt.h>
 #include <pcl/visualization/image_viewer.h>
-
-#include <boost/date_time/posix_time/posix_time.hpp> // for to_iso_string, local_time
 
 #include <mutex>
 
@@ -113,7 +112,7 @@ public:
   using CloudConstPtr = typename Cloud::ConstPtr;
 
   OpenNIViewer(pcl::Grabber& grabber)
-  : grabber_(grabber), rgb_data_(nullptr), rgb_data_size_(0)
+  : grabber_(grabber), rgb_data_(nullptr), rgb_data_size_(0), counter_(0)
   {}
 
   void
@@ -175,9 +174,7 @@ public:
       if ((event.getKeyCode() == 's') || (event.getKeyCode() == 'S')) {
         std::lock_guard<std::mutex> lock(cloud_mutex_);
         frame.str("frame-");
-        frame << boost::posix_time::to_iso_string(
-                     boost::posix_time::microsec_clock::local_time())
-              << ".pcd";
+        frame << pcl::getTimestamp() << ".pcd";
         writer.writeBinaryCompressed(frame.str(), *cloud_);
         PCL_INFO("Written cloud %s.\n", frame.str().c_str());
       }

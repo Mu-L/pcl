@@ -44,12 +44,9 @@
 #include <pcl/visualization/image_viewer.h>
 #include <pcl/point_types.h>
 
-#include <boost/filesystem.hpp>
-
 #include <mutex>
 
 using namespace pcl::console;
-using namespace boost::filesystem;
 
 class OpenNIGrabFrame {
 public:
@@ -117,8 +114,7 @@ public:
   void
   saveImages()
   {
-    std::string time = boost::posix_time::to_iso_string(
-        boost::posix_time::microsec_clock::local_time());
+    const std::string time = pcl::getTimestamp();
     openni_wrapper::Image::Ptr image;
     openni_wrapper::DepthImage::Ptr depth_image;
 
@@ -204,8 +200,7 @@ public:
 
     // wait until user quits program with Ctrl-C, but no busy-waiting -> sleep (1);
     while (!image_viewer_.wasStopped() && !quit_) {
-      std::string time = boost::posix_time::to_iso_string(
-          boost::posix_time::microsec_clock::local_time());
+      const std::string time = pcl::getTimestamp();
       openni_wrapper::Image::Ptr image;
       openni_wrapper::DepthImage::Ptr depth_image;
 
@@ -256,7 +251,7 @@ public:
             depth_image->getWidth(),
             depth_image->getHeight(),
             std::numeric_limits<unsigned short>::min(),
-            // Scale so that the colors look brigher on screen
+            // Scale so that the colors look brighter on screen
             std::numeric_limits<unsigned short>::max() / 10,
             true);
 

@@ -2,9 +2,8 @@ set(SUBSYS_NAME features)
 set(SUBSYS_DESC "Point cloud features library")
 set(SUBSYS_DEPS common search kdtree octree filters 2d)
 
-set(build TRUE)
 PCL_SUBSYS_OPTION(build "${SUBSYS_NAME}" "${SUBSYS_DESC}" ON)
-PCL_SUBSYS_DEPEND(build NAME ${SUBSYS_NAME} DEPS ${SUBSYS_DEPS})
+PCL_SUBSYS_DEPEND(build NAME ${SUBSYS_NAME} DEPS ${SUBSYS_DEPS} OPT_DEPS OpenMP)
 
 PCL_ADD_DOC("${SUBSYS_NAME}")
 
@@ -12,11 +11,7 @@ if(NOT build)
   return()
 endif()
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
-
 set(incs
-  "include/pcl/${SUBSYS_NAME}/boost.h"
-  "include/pcl/${SUBSYS_NAME}/eigen.h"
   "include/pcl/${SUBSYS_NAME}/board.h"
   "include/pcl/${SUBSYS_NAME}/flare.h"
   "include/pcl/${SUBSYS_NAME}/brisk_2d.h"
@@ -171,7 +166,7 @@ endif()
 
 set(LIB_NAME "pcl_${SUBSYS_NAME}")
 PCL_ADD_LIBRARY(${LIB_NAME} COMPONENT ${SUBSYS_NAME} SOURCES ${srcs} ${incs} ${impl_incs})
-target_link_libraries("${LIB_NAME}" pcl_common pcl_search pcl_kdtree pcl_octree pcl_filters)
+target_link_libraries("${LIB_NAME}" pcl_common pcl_2d pcl_search pcl_kdtree pcl_octree pcl_filters)
 PCL_MAKE_PKGCONFIG(${LIB_NAME} COMPONENT ${SUBSYS_NAME} DESC ${SUBSYS_DESC} PCL_DEPS ${SUBSYS_DEPS})
 # Install headers
 PCL_ADD_INCLUDES("${SUBSYS_NAME}" "${SUBSYS_NAME}" ${incs})

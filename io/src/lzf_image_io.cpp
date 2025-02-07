@@ -37,10 +37,11 @@
 #include <pcl/io/low_level_io.h>
 #include <pcl/io/lzf_image_io.h>
 #include <pcl/io/lzf.h>
+#include <pcl/common/pcl_filesystem.h>
 #include <pcl/console/print.h>
 #include <fcntl.h>
 #include <cstring>
-#include <boost/filesystem.hpp>
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
@@ -67,7 +68,7 @@ pcl::io::LZFImageWriter::saveImageBlob (const char* data,
   HANDLE h_native_file = CreateFile (filename.c_str (), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
   if (h_native_file == INVALID_HANDLE_VALUE)
     return (false);
-  HANDLE fm = CreateFileMapping (h_native_file, NULL, PAGE_READWRITE, 0, data_size, NULL);
+  HANDLE fm = CreateFileMapping (h_native_file, NULL, PAGE_READWRITE, (DWORD) (data_size >> 32), (DWORD) (data_size), NULL);
   char *map = static_cast<char*> (MapViewOfFile (fm, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, data_size));
   CloseHandle (fm);
   std::copy(data, data + data_size, map);
@@ -135,7 +136,7 @@ pcl::io::LZFImageWriter::compress (const char* input,
     if (itype.size () > 16)
     {
       PCL_WARN ("[pcl::io::LZFImageWriter::compress] Image type should be a string of maximum 16 characters! Cutting %s to %s.\n", image_type.c_str (), image_type.substr (0, 15).c_str ());
-      itype = itype.substr (0, 15);
+      itype.resize(16);
     }
     if (itype.size () < 16)
       itype.insert (itype.end (), 16 - itype.size (), ' ');
@@ -347,9 +348,7 @@ pcl::io::LZFBayer8ImageWriter::write (const char *data,
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 pcl::io::LZFImageReader::LZFImageReader ()
-  : width_ ()
-  , height_ ()
-  , parameters_ ()
+  : parameters_ ()
 {
 }
 
@@ -359,7 +358,7 @@ pcl::io::LZFImageReader::loadImageBlob (const std::string &filename,
                                         std::vector<char> &data,
                                         std::uint32_t &uncompressed_size)
 {
-  if (filename.empty() || !boost::filesystem::exists (filename))
+  if (filename.empty() || !pcl_fs::exists (filename))
   {
     PCL_ERROR ("[pcl::io::LZFImageReader::loadImage] Could not find file '%s'.\n", filename.c_str ());
     return (false);

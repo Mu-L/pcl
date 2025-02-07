@@ -50,7 +50,7 @@ void pcl::face_detection::FaceDetectorDataProvider<FeatureType, DataSet, LabelTy
 {
   std::string start;
   std::string ext = std::string ("pcd");
-  bf::path dir = data_dir;
+  pcl_fs::path dir = data_dir;
 
   std::vector < std::string > files;
   getFilesInDirectory (dir, start, files, ext);
@@ -93,7 +93,7 @@ void pcl::face_detection::FaceDetectorDataProvider<FeatureType, DataSet, LabelTy
 
     if (readMatrixFromFile (pose_file, pose_mat))
     {
-      Eigen::Vector3f ea = pose_mat.block<3, 3> (0, 0).eulerAngles (0, 1, 2);
+      Eigen::Vector3f ea = pose_mat.topLeftCorner<3, 3> ().eulerAngles (0, 1, 2);
       ea *= 57.2957795f; //transform it to degrees to do the binning
       int y = static_cast<int>(pcl_round ((ea[0] + static_cast<float>(std::abs (min_yaw))) / res_yaw));
       int p = static_cast<int>(pcl_round ((ea[1] + static_cast<float>(std::abs (min_pitch))) / res_pitch));
@@ -254,7 +254,7 @@ void pcl::face_detection::FaceDetectorDataProvider<FeatureType, DataSet, LabelTy
 
     int element_stride = sizeof(pcl::PointXYZ) / sizeof(float);
     int row_stride = element_stride * cloud->width;
-    const float *data = reinterpret_cast<const float*> (&(*cloud)[0]); // NOLINT(readability-container-data-pointer)
+    const float *data = reinterpret_cast<const float*> (cloud->data());
     integral_image_depth->setInput (data + 2, cloud->width, cloud->height, element_stride, row_stride);
 
     //Compute normals and normal integral images
@@ -354,7 +354,7 @@ void pcl::face_detection::FaceDetectorDataProvider<FeatureType, DataSet, LabelTy
     pose_mat.setIdentity (4, 4);
     readMatrixFromFile (pose_file, pose_mat);
 
-    Eigen::Vector3f ea = pose_mat.block<3, 3> (0, 0).eulerAngles (0, 1, 2);
+    Eigen::Vector3f ea = pose_mat.topLeftCorner<3, 3> ().eulerAngles (0, 1, 2);
     Eigen::Vector3f trans_vector = Eigen::Vector3f (pose_mat (0, 3), pose_mat (1, 3), pose_mat (2, 3));
 
     pcl::PointXYZ center_point;
